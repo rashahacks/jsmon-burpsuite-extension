@@ -7,7 +7,7 @@ Built using the MONTOYA API, this extension will send the URLs ending with '.js'
  1. Clone the repo
   
   ```bash
-  git clone https://github.com/your-username/jsmon-burp-extension.git
+  git clone https://github.com/rashahacks/jsmon-burpsuite-extension.git
   ```
 2. In burpsuite extension, click on add extension and select JAVA as extension type. Upload the '.jar' file generated from the cloned repo.
 3. In the extension add your apikey and wkspId, click on save and then your are ready with the setup.
