@@ -65,7 +65,6 @@ public class JsmonHttpHandler implements HttpHandler {
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
                     .build();
 
-
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
 
