@@ -50,12 +50,12 @@ public class JsmonHttpHandler implements HttpHandler {
         }
         try {
 
-            String backendEndpoint = String.format("https://api-dev.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
+            String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
             HttpClient client = HttpClient.newHttpClient();
 
 
             String jsonPayload = String.format("{\"url\": \"%s\"}", url);
-            logArea.append(jsonPayload+"\n");
+            //logArea.append(jsonPayload+"\n");
 
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -70,9 +70,9 @@ public class JsmonHttpHandler implements HttpHandler {
 
 
             if (response.statusCode() == 200) {
-                logArea.append("URL sent successfully! Response: " + response.statusCode() + "\n");
+                logArea.append(url + " sent successfully!! Response: " + response.statusCode() + "\n");
             } else {
-                logArea.append("Failed to send URL. Response code: " + response.statusCode() + "\n");
+                logArea.append("Failed to send " + url + ". Response code: " + response.statusCode() + "\n");
             }
 
 

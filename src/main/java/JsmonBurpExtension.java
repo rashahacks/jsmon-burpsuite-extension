@@ -15,11 +15,11 @@ public class JsmonBurpExtension implements BurpExtension{
     public void initialize(MontoyaApi api) {
         this.api = api;
         api.extension().setName("Jsmon");
-        api.logging().logToOutput("Extension initialized: JSMON ==> 1355");
+        api.logging().logToOutput("Extension initialized!!");
 
         JPanel mainPanel = createMainPanel();
 
-        api.userInterface().registerSuiteTab("JSMON", mainPanel);
+        api.userInterface().registerSuiteTab("Jsmon", mainPanel);
 
         JsmonHttpHandler handler = new JsmonHttpHandler(this);
         api.http().registerHttpHandler(handler);
