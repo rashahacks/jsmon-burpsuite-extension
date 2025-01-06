@@ -1,6 +1,7 @@
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.ui.*;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,12 +44,17 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        Preferences prefs = Preferences.userRoot().node("com.jsmon.extension");
+
+        String storedApiKey = prefs.get("apiKey", "");
+        String storedWkspId = prefs.get("wkspId", "");
+
         JLabel label = new JLabel("API Key:");
         gbc.gridx = 0;
         gbc.gridy = 0;
         inputPanel.add(label, gbc);
 
-        JTextField apiKeyField = new JTextField(30);
+        JTextField apiKeyField = new JTextField(storedApiKey,30);
         gbc.gridx = 1;
         gbc.gridy = 0;
         inputPanel.add(apiKeyField, gbc);
@@ -58,7 +64,7 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridy = 1;
         inputPanel.add(labelWksp, gbc);
 
-        JTextField wkspIdField = new JTextField(30);
+        JTextField wkspIdField = new JTextField(storedWkspId,30);
         gbc.gridx = 1;
         gbc.gridy = 1;
         inputPanel.add(wkspIdField, gbc);
@@ -75,6 +81,10 @@ public class JsmonBurpExtension implements BurpExtension{
             if (!apikey.isEmpty() && !wkspid.isEmpty()) {
                 apiKey = apikey;
                 wkspId = wkspid;
+                prefs.put("apiKey", apikey);
+                prefs.put("wkspId", wkspid);
+                logArea.append("APIKEY added "+apikey);
+                logArea.append("Workspace Id added "+wkspid);
                 JOptionPane.showMessageDialog(null, "API key saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
 
