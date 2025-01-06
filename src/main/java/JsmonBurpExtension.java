@@ -16,7 +16,7 @@ public class JsmonBurpExtension implements BurpExtension{
     public void initialize(MontoyaApi api) {
         this.api = api;
         api.extension().setName("Jsmon");
-        api.logging().logToOutput("Extension initialized!!");
+        api.logging().logToOutput("Extension initialized  !!");
 
         JPanel mainPanel = createMainPanel();
 
@@ -37,7 +37,7 @@ public class JsmonBurpExtension implements BurpExtension{
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridBagLayout());
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -69,10 +69,37 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridy = 1;
         inputPanel.add(wkspIdField, gbc);
 
+//        JLabel jsUrlScanLabel = new JLabel("Automatic Scan:");
+//        gbc.gridx = 0;
+//        gbc.gridy = 2;
+//        gbc.gridwidth = 4;
+//        inputPanel.add(jsUrlScanLabel,gbc);
+//
+//        JRadioButton yesRadioButton = new JRadioButton("Yes");
+//        JRadioButton noRadioButton = new JRadioButton("No");
+//
+//        ButtonGroup group = new ButtonGroup();
+//        group.add(yesRadioButton);
+//        group.add(noRadioButton);
+//
+//
+//        yesRadioButton.setSelected(true);
+//
+//
+//        JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//        radioPanel.add(yesRadioButton);
+//        radioPanel.add(noRadioButton);
+//
+//
+//        gbc.gridx = 1;
+//        gbc.gridy = 2;
+//        gbc.gridwidth = 1;
+//        inputPanel.add(radioPanel, gbc);
+
         JButton saveButton = new JButton("Save");
         gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
+        gbc.gridy = 3;
+        gbc.gridwidth=2;
         gbc.anchor = GridBagConstraints.CENTER;
         saveButton.addActionListener(e -> {
             String apikey = apiKeyField.getText().trim();
@@ -83,8 +110,8 @@ public class JsmonBurpExtension implements BurpExtension{
                 wkspId = wkspid;
                 prefs.put("apiKey", apikey);
                 prefs.put("wkspId", wkspid);
-                logArea.append("APIKEY added "+apikey);
-                logArea.append("Workspace Id added "+wkspid);
+                logArea.append("APIKEY added "+apikey+"\n");
+                logArea.append("Workspace Id added "+wkspid+"\n");
                 JOptionPane.showMessageDialog(null, "API key saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
 
@@ -93,18 +120,22 @@ public class JsmonBurpExtension implements BurpExtension{
         });
         inputPanel.add(saveButton, gbc);
 
+
+        JLabel inputLabel = new JLabel("Enter URLs to scan");
+        
+
         JLabel logLabel = new JLabel("Logs:");
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         inputPanel.add(logLabel, gbc);
 
-        JTextArea logArea = new JTextArea(10, 40);
+        JTextArea logArea = new JTextArea(8, 70);
         logArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(logArea);
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.BOTH;
         inputPanel.add(scrollPane, gbc);

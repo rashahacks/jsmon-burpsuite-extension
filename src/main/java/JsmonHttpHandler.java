@@ -50,7 +50,7 @@ public class JsmonHttpHandler implements HttpHandler {
         }
         try {
 
-            String backendEndpoint = String.format("https://api-dev.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
+            String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
             HttpClient client = HttpClient.newHttpClient();
 
 
