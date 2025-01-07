@@ -44,39 +44,44 @@ public class JsmonHttpHandler implements HttpHandler {
     }
 
     private void sendToBackend(String url, String apiKey, String wkspId) {
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            api.logging().logToOutput("API key is not set. Please configure your API key.");
-            return;
-        }
-        try {
 
-            String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
-            HttpClient client = HttpClient.newHttpClient();
+        boolean allowAutomateScan = extension.getAutomaticScan();
 
-
-            String jsonPayload = String.format("{\"url\": \"%s\"}", url);
-            logArea.append(jsonPayload+"\n");
-
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(backendEndpoint))
-                    .header("Content-Type", "application/json")
-                    .header("X-Jsmon-Key", apiKey)
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-
-            if (response.statusCode() == 200) {
-                logArea.append(url + " sent successfully!! Response: " + response.statusCode() + "\n");
-            } else {
-                logArea.append("Failed to send " + url + "! Response code: " + response.statusCode() + "\n");
+        if(allowAutomateScan) {
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                api.logging().logToOutput("API key is not set. Please configure your API key.");
+                return;
             }
+            try {
+
+                String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
+                HttpClient client = HttpClient.newHttpClient();
 
 
-        }catch(Exception e){
-            api.logging().logToOutput("Error sending URL: " + e);
+                String jsonPayload = String.format("{\"url\": \"%s\"}", url);
+                logArea.append(jsonPayload + "\n");
+
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(backendEndpoint))
+                        .header("Content-Type", "application/json")
+                        .header("X-Jsmon-Key", apiKey)
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+                if (response.statusCode() == 200) {
+                    logArea.append(url + " sent successfully!! Response: " + response.statusCode() + "\n");
+                } else {
+                    logArea.append("Failed to send " + url + "! Response code: " + response.statusCode() + "\n");
+                }
+
+
+            } catch (Exception e) {
+                api.logging().logToOutput("Error sending URL: " + e);
+            }
         }
     }
 

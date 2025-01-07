@@ -12,6 +12,7 @@ public class JsmonBurpExtension implements BurpExtension{
     private MontoyaApi api;
     private String apiKey = "";
     private String wkspId = "";
+    private boolean automtaicScan = true;
     @Override
     public void initialize(MontoyaApi api) {
         this.api = api;
@@ -26,21 +27,25 @@ public class JsmonBurpExtension implements BurpExtension{
         api.http().registerHttpHandler(handler);
 
 
+
     }
 
     private JPanel createMainPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(createInputPanel(), BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane(createInputPanel());
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
 
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridBagLayout());
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(15, 15, 15, 15);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
@@ -69,37 +74,44 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridy = 1;
         inputPanel.add(wkspIdField, gbc);
 
-//        JLabel jsUrlScanLabel = new JLabel("Automatic Scan:");
-//        gbc.gridx = 0;
-//        gbc.gridy = 2;
-//        gbc.gridwidth = 4;
-//        inputPanel.add(jsUrlScanLabel,gbc);
-//
-//        JRadioButton yesRadioButton = new JRadioButton("Yes");
-//        JRadioButton noRadioButton = new JRadioButton("No");
-//
-//        ButtonGroup group = new ButtonGroup();
-//        group.add(yesRadioButton);
-//        group.add(noRadioButton);
-//
-//
-//        yesRadioButton.setSelected(true);
-//
-//
-//        JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//        radioPanel.add(yesRadioButton);
-//        radioPanel.add(noRadioButton);
-//
-//
-//        gbc.gridx = 1;
-//        gbc.gridy = 2;
-//        gbc.gridwidth = 1;
-//        inputPanel.add(radioPanel, gbc);
+        JLabel jsUrlScanLabel = new JLabel("Automatic Scan:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 4;
+        inputPanel.add(jsUrlScanLabel,gbc);
+
+        JRadioButton yesRadioButton = new JRadioButton("Yes");
+        JRadioButton noRadioButton = new JRadioButton("No");
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(yesRadioButton);
+        group.add(noRadioButton);
+
+
+        yesRadioButton.setSelected(true);
+
+
+        JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        radioPanel.add(yesRadioButton);
+        radioPanel.add(noRadioButton);
+
+        noRadioButton.addActionListener(e -> {
+            automtaicScan = false;
+        });
+        yesRadioButton.addActionListener(e -> {
+            automtaicScan = true;
+        });
+
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        inputPanel.add(radioPanel, gbc);
 
         JButton saveButton = new JButton("Save");
         gbc.gridx = 0;
         gbc.gridy = 3;
-        gbc.gridwidth=2;
+        gbc.gridwidth=1;
         gbc.anchor = GridBagConstraints.CENTER;
         saveButton.addActionListener(e -> {
             String apikey = apiKeyField.getText().trim();
@@ -120,22 +132,44 @@ public class JsmonBurpExtension implements BurpExtension{
         });
         inputPanel.add(saveButton, gbc);
 
+        JLabel manualUrl = new JLabel("Enter URLs (line seperated)");
+        gbc.gridy = 5;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        inputPanel.add(manualUrl, gbc);
 
-        JLabel inputLabel = new JLabel("Enter URLs to scan");
-        
+        JTextArea manualUrlInput = new JTextArea(8,60);
+        gbc.gridx = 0;
+        gbc.gridy=6;
+        gbc.anchor = GridBagConstraints.CENTER;
+        inputPanel.add(manualUrlInput,gbc);
+
+        JButton submitButton = new JButton("Submit");
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth=1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        inputPanel.add(submitButton,gbc);
+
+        submitButton.addActionListener(e -> {
+            String allUrls[] = manualUrlInput.getText().trim().split("\n");
+            //logArea.append(allUrls[0]);
+            JsmonManualUrlProcessing.processManualUrls(allUrls, wkspId, apiKey, logArea);
+        });
 
         JLabel logLabel = new JLabel("Logs:");
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy =  10;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         inputPanel.add(logLabel, gbc);
 
-        JTextArea logArea = new JTextArea(8, 70);
+        JTextArea logArea = new JTextArea(8, 90);
         logArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(logArea);
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 11;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.BOTH;
         inputPanel.add(scrollPane, gbc);
@@ -149,21 +183,12 @@ public class JsmonBurpExtension implements BurpExtension{
     private JTextArea logArea;
 
 
-
-
-//    private void saveFunc(String apiKeyInput) {
-//        if (apiKeyInput == null || apiKeyInput.trim().isEmpty()) {
-//            api.logging().logToOutput("API key is empty. Please enter a valid API key.");
-//            JOptionPane.showMessageDialog(null, "API key cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
-//        } else {
-//            this.apiKey = apiKeyInput.trim();
-//            api.logging().logToOutput("API key saved: " + apiKey);
-//            JOptionPane.showMessageDialog(null, "API key saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-//        }
-//    }
-
     public String getApiKey() {
         return apiKey;
+    }
+
+    public boolean getAutomaticScan() {
+        return automtaicScan;
     }
 
     public String getWkspId(){
