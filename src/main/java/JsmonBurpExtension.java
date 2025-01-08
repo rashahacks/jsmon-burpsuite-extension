@@ -145,10 +145,11 @@ public class JsmonBurpExtension implements BurpExtension{
         inputPanel.add(manualUrl, gbc);
 
         JTextArea manualUrlInput = new JTextArea(8,60);
+        JScrollPane scrollForUrl = new JScrollPane(manualUrlInput);
         gbc.gridx = 0;
         gbc.gridy=6;
         gbc.anchor = GridBagConstraints.CENTER;
-        inputPanel.add(manualUrlInput,gbc);
+        inputPanel.add(scrollForUrl,gbc);
 
         JButton submitButton = new JButton("Submit");
         gbc.gridx = 0;
