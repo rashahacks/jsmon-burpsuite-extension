@@ -2,6 +2,9 @@ import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.ui.*;
 import java.util.prefs.Preferences;
+import burp.api.montoya.ui.contextmenu.ContextMenuItemsProvider;
+import burp.api.montoya.ui.menu.MenuItem;
+import burp.api.montoya.http.message.HttpRequestResponse;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,13 +25,15 @@ public class JsmonBurpExtension implements BurpExtension{
         JPanel mainPanel = createMainPanel();
 
         api.userInterface().registerSuiteTab("Jsmon", mainPanel);
-
         JsmonHttpHandler handler = new JsmonHttpHandler(this);
         api.http().registerHttpHandler(handler);
 
-
+        JsmonContextMenu jsmonContextMenu = new JsmonContextMenu(this);
+        api.userInterface().registerContextMenuItemsProvider(jsmonContextMenu);
 
     }
+
+
 
     private JPanel createMainPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -203,3 +208,5 @@ public class JsmonBurpExtension implements BurpExtension{
         return logArea;
     }
 }
+
+
