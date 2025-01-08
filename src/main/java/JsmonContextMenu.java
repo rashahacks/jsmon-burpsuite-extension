@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class JsmonContextMenu implements ContextMenuItemsProvider {
 
@@ -40,40 +41,62 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
     }
 
     private void handleSelectedMessage(List<HttpRequestResponse> selectedMessages) {
-           String apiKey = extension.getApiKey();
-           String wkspId = extension.getWkspId();
-       try {
-           String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
-           HttpClient client = HttpClient.newHttpClient();
+        String apiKey = extension.getApiKey();
+        String wkspId = extension.getWkspId();
 
-           for (HttpRequestResponse message : selectedMessages) {
-               String url = message.request().url().toString();
+        SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
+                HttpClient client = HttpClient.newHttpClient();
 
-               try {
-                   String jsonPayload = String.format("{\"url\": \"%s\"}", url);
-                   logArea.append(jsonPayload+"\n");
-                   HttpRequest request = HttpRequest.newBuilder()
-                           .uri(URI.create(backendEndpoint))
-                           .header("Content-Type", "application/json")
-                           .header("X-Jsmon-Key", apiKey)
-                           .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                           .build();
+                for (HttpRequestResponse message : selectedMessages) {
+                    String url = message.request().url().toString();
 
-                   HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    try {
+                        String jsonPayload = String.format("{\"url\": \"%s\"}", url);
+                        publish(jsonPayload+ "\n");
 
-                   //logArea.append(apiKey +" -> wkspId " + wkspId + " -> " +request);
-                   if (response.statusCode() == 200) {
-                       logArea.append(url + " sent successfully!! Response: " + response.statusCode() + "\n");
-                   } else {
-                       logArea.append("Failed to send " + url + "! Response code: " + response.statusCode() + "\n");
-                   }
-               } catch (Exception e) {
-                   logArea.append("Error proceesing " + url + " \n");
-               }
+                        HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(backendEndpoint))
+                                .header("Content-Type", "application/json")
+                                .header("X-Jsmon-Key", apiKey)
+                                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                                .build();
 
-           }
-       }catch(Exception e){
-           logArea.append("Error Sending Url!!");
-       }
+                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                        if (response.statusCode() == 200) {
+                            publish(url + " sent successfully!! Response: " + response.statusCode() + "\n");
+                        } else {
+                            publish("Failed to send " + url + "! Response code: " + response.statusCode() + "\n");
+                        }
+                    } catch (Exception e) {
+                        publish("Error processing " + url + " \n");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void process(java.util.List<String> chunks) {
+                for (String chunk : chunks) {
+                    logArea.append(chunk);
+                }
+            }
+
+            @Override
+            protected void done() {
+
+                try {
+                    get();
+                    logArea.append("All URLs successfully Uploaded !\n");
+                } catch (InterruptedException | ExecutionException e) {
+                    logArea.append("Error processing URLs in the background.\n");
+                }
+            }
+        };
+
+        worker.execute();
     }
 }
