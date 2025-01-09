@@ -8,13 +8,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
-
+import java.util.concurrent.*;
 
 
 public class JsmonHttpHandler implements HttpHandler {
 
 
-
+    private final Semaphore semaphore;
     private final JsmonBurpExtension extension;
     private final MontoyaApi api;
     private final JTextArea logArea;
@@ -22,6 +22,7 @@ public class JsmonHttpHandler implements HttpHandler {
         this.extension = extension;
         api = extension.getApi();
         logArea = extension.getLogArea();
+        this.semaphore = new Semaphore(5);
 
     }
 
@@ -32,7 +33,18 @@ public class JsmonHttpHandler implements HttpHandler {
 
         if(url.endsWith("js")){
             System.out.println(url);
-            Thread.startVirtualThread(() -> sendToBackend(url, extension.getApiKey(), extension.getWkspId()));
+            Thread.startVirtualThread(() ->
+                    {
+                      try{
+                       semaphore.acquire();
+                       sendToBackend(url, extension.getApiKey(), extension.getWkspId());
+                      }catch (InterruptedException e){
+                          Thread.currentThread().interrupt();
+                        logArea.append("Exception Occured At VT block");
+                      }finally {
+                          semaphore.release();
+                      }
+                    });
         }
 
         return RequestToBeSentAction.continueWith(httpRequestToBeSent);
@@ -59,7 +71,8 @@ public class JsmonHttpHandler implements HttpHandler {
 
 
                 String jsonPayload = String.format("{\"url\": \"%s\"}", url);
-                logArea.append(jsonPayload + "\n");
+                long currentTime = System.currentTimeMillis()/1000;
+                logArea.append(jsonPayload + " "+ currentTime + "\n");
 
 
                 HttpRequest request = HttpRequest.newBuilder()

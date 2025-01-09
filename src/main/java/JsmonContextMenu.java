@@ -11,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 
 public class JsmonContextMenu implements ContextMenuItemsProvider {
 
@@ -43,7 +44,7 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
     private void handleSelectedMessage(List<HttpRequestResponse> selectedMessages) {
         String apiKey = extension.getApiKey();
         String wkspId = extension.getWkspId();
-
+        Semaphore semaphore = new Semaphore(5);
         SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -52,10 +53,11 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
 
                 for (HttpRequestResponse message : selectedMessages) {
                     String url = message.request().url().toString();
-
+                    semaphore.acquire();
                     try {
                         String jsonPayload = String.format("{\"url\": \"%s\"}", url);
-                        publish(jsonPayload+ "\n");
+                        long timme = System.currentTimeMillis()/1000;
+                        publish(jsonPayload+ " "+ timme +" \n");
 
                         HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create(backendEndpoint))
@@ -73,6 +75,8 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
                         }
                     } catch (Exception e) {
                         publish("Error processing " + url + " \n");
+                    }finally {
+                        semaphore.release();
                     }
                 }
                 return null;
