@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -44,6 +45,11 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
     private void handleSelectedMessage(List<HttpRequestResponse> selectedMessages) {
         String apiKey = extension.getApiKey();
         String wkspId = extension.getWkspId();
+        HashSet<String> uniqueUrls = new HashSet<>();
+        for(HttpRequestResponse message : selectedMessages){
+            String url = message.request().url().toString();
+            uniqueUrls.add(url);
+        }
         Semaphore semaphore = new Semaphore(5);
         SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
             @Override
@@ -51,8 +57,7 @@ public class JsmonContextMenu implements ContextMenuItemsProvider {
                 String backendEndpoint = String.format("https://api.jsmon.sh/api/v2/uploadUrl?wkspId=%s", wkspId);
                 HttpClient client = HttpClient.newHttpClient();
 
-                for (HttpRequestResponse message : selectedMessages) {
-                    String url = message.request().url().toString();
+                for (String url : uniqueUrls) {
                     semaphore.acquire();
                     try {
                         String jsonPayload = String.format("{\"url\": \"%s\"}", url);
