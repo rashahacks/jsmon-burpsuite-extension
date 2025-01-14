@@ -1,5 +1,6 @@
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.handler.*;
+import burp.api.montoya.http.message.HttpHeader;
 
 
 import javax.swing.*;
@@ -30,9 +31,17 @@ public class JsmonHttpHandler implements HttpHandler {
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
 
         String url = httpRequestToBeSent.url().toString();
+        HttpHeader contentType = httpRequestToBeSent.header("Content-Type");
+        String value = "";
 
-        if(url.endsWith("js")){
-            System.out.println(url);
+        if(contentType != null){
+            value = contentType.value();
+        }
+
+       // api.logging().logToOutput(value);
+
+        if(url.endsWith("js") || value.contains("javascript")){
+            api.logging().logToOutput(url);
             Thread.startVirtualThread(() ->
                     {
                       try{
@@ -58,6 +67,8 @@ public class JsmonHttpHandler implements HttpHandler {
     private void sendToBackend(String url, String apiKey, String wkspId) {
 
         boolean allowAutomateScan = extension.getAutomaticScan();
+       // api.logging().logToOutput(allowAutomateScan?"YES":"NO");
+
 
         if(allowAutomateScan) {
             if (apiKey == null || apiKey.trim().isEmpty()) {
