@@ -1,20 +1,19 @@
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
+import java.net.http.HttpRequest;
+import burp.api.montoya.*;
+
 
 
 import javax.swing.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 
 
 public class JsmonHttpHandler implements HttpHandler {
-
-
     private final Semaphore semaphore;
     private final JsmonBurpExtension extension;
     private final MontoyaApi api;
@@ -30,19 +29,20 @@ public class JsmonHttpHandler implements HttpHandler {
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
 
-        String url = httpRequestToBeSent.url().toString();
-        HttpHeader contentType = httpRequestToBeSent.header("Content-Type");
-        String value = "";
+        return RequestToBeSentAction.continueWith(httpRequestToBeSent);
+    }
 
-        if(contentType != null){
-            value = contentType.value();
-        }
+    @Override
+    public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived httpResponseReceived) {
 
-       // api.logging().logToOutput(value);
+        burp.api.montoya.http.message.requests.HttpRequest request =  httpResponseReceived.initiatingRequest();
 
-        if(url.endsWith("js") || value.contains("javascript")){
-            api.logging().logToOutput(url);
-            Thread.startVirtualThread(() ->
+          String url = request.url();
+          HttpHeader contentType = httpResponseReceived.header("Content-Type");
+
+          if( (url.contains(".js")) || (contentType!=null && contentType.value().contains("javascript"))){
+              logArea.append(url);
+              Thread.startVirtualThread(() ->
                     {
                       try{
                        semaphore.acquire();
@@ -51,17 +51,14 @@ public class JsmonHttpHandler implements HttpHandler {
                           Thread.currentThread().interrupt();
                         logArea.append("Exception Occured At VT block");
                       }finally {
+
                           semaphore.release();
                       }
                     });
-        }
+            }
 
-        return RequestToBeSentAction.continueWith(httpRequestToBeSent);
-    }
 
-    @Override
-    public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived httpResponseReceived) {
-        return null;
+        return ResponseReceivedAction.continueWith(httpResponseReceived);
     }
 
     private void sendToBackend(String url, String apiKey, String wkspId) {
