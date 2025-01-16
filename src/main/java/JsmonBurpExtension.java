@@ -16,6 +16,7 @@ public class JsmonBurpExtension implements BurpExtension{
     private String apiKey = "";
     private String wkspId = "";
     private boolean automtaicScan = true;
+    private String scopeVariable = "";
     @Override
     public void initialize(MontoyaApi api) {
         this.api = api;
@@ -64,7 +65,7 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridy = 0;
         inputPanel.add(label, gbc);
 
-        JTextField apiKeyField = new JTextField(storedApiKey,30);
+        JTextField apiKeyField = new JTextField(storedApiKey,1);
         gbc.gridx = 1;
         gbc.gridy = 0;
         inputPanel.add(apiKeyField, gbc);
@@ -74,10 +75,12 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridy = 1;
         inputPanel.add(labelWksp, gbc);
 
-        JTextField wkspIdField = new JTextField(storedWkspId,30);
+        JTextField wkspIdField = new JTextField(storedWkspId,1);
         gbc.gridx = 1;
         gbc.gridy = 1;
         inputPanel.add(wkspIdField, gbc);
+
+
 
         JLabel jsUrlScanLabel = new JLabel("Automatic Scan:");
         gbc.gridx = 0;
@@ -113,22 +116,38 @@ public class JsmonBurpExtension implements BurpExtension{
         gbc.gridwidth = 1;
         inputPanel.add(radioPanel, gbc);
 
-        JButton saveButton = new JButton("Save");
+        JLabel scopeField = new JLabel("Scope Domain");
         gbc.gridx = 0;
         gbc.gridy = 3;
+        inputPanel.add(scopeField,gbc);
+
+        JTextField scopeDomainField = new JTextField(10);
+        gbc.gridx=1;
+        gbc.gridy=3;
+        inputPanel.add(scopeDomainField,gbc);
+
+
+        JButton saveButton = new JButton("Save");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         gbc.gridwidth=1;
         gbc.anchor = GridBagConstraints.CENTER;
         saveButton.addActionListener(e -> {
             String apikey = apiKeyField.getText().trim();
             String wkspid = wkspIdField.getText().trim();
+            String scopeVar = scopeDomainField.getText().trim();
 
             if (!apikey.isEmpty() && !wkspid.isEmpty()) {
                 apiKey = apikey;
                 wkspId = wkspid;
+                scopeVariable = scopeVar;
                 prefs.put("apiKey", apikey);
                 prefs.put("wkspId", wkspid);
                 logArea.append("APIKEY added "+apikey+"\n");
                 logArea.append("Workspace Id added "+wkspid+"\n");
+                if(!scopeVariable.isEmpty()){
+                    logArea.append("Scope Domain" + scopeVariable+"\n");
+                }
                 JOptionPane.showMessageDialog(null, "API key saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
 
@@ -138,7 +157,7 @@ public class JsmonBurpExtension implements BurpExtension{
         inputPanel.add(saveButton, gbc);
 
         JLabel manualUrl = new JLabel("Enter URLs (line seperated)");
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
@@ -147,13 +166,13 @@ public class JsmonBurpExtension implements BurpExtension{
         JTextArea manualUrlInput = new JTextArea(8,60);
         JScrollPane scrollForUrl = new JScrollPane(manualUrlInput);
         gbc.gridx = 0;
-        gbc.gridy=6;
+        gbc.gridy=7;
         gbc.anchor = GridBagConstraints.CENTER;
         inputPanel.add(scrollForUrl,gbc);
 
         JButton submitButton = new JButton("Submit");
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 8;
         gbc.gridwidth=1;
         gbc.anchor = GridBagConstraints.CENTER;
         inputPanel.add(submitButton,gbc);
@@ -166,7 +185,7 @@ public class JsmonBurpExtension implements BurpExtension{
 
         JLabel logLabel = new JLabel("Logs:");
         gbc.gridx = 0;
-        gbc.gridy =  10;
+        gbc.gridy =  11;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         inputPanel.add(logLabel, gbc);
@@ -175,7 +194,7 @@ public class JsmonBurpExtension implements BurpExtension{
         logArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(logArea);
         gbc.gridx = 0;
-        gbc.gridy = 11;
+        gbc.gridy = 12;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.BOTH;
         inputPanel.add(scrollPane, gbc);
@@ -188,7 +207,9 @@ public class JsmonBurpExtension implements BurpExtension{
 
     private JTextArea logArea;
 
-
+    public String getScopeVariable(){
+        return scopeVariable;
+    }
     public String getApiKey() {
         return apiKey;
     }

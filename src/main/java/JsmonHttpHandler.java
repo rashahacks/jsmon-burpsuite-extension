@@ -34,27 +34,30 @@ public class JsmonHttpHandler implements HttpHandler {
 
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived httpResponseReceived) {
-
+        String scopeVariable = extension.getScopeVariable().toLowerCase();
         burp.api.montoya.http.message.requests.HttpRequest request =  httpResponseReceived.initiatingRequest();
 
           String url = request.url();
           HttpHeader contentType = httpResponseReceived.header("Content-Type");
 
           if( (url.contains(".js")) || (contentType!=null && contentType.value().contains("javascript"))){
-              logArea.append(url);
-              Thread.startVirtualThread(() ->
-                    {
-                      try{
-                       semaphore.acquire();
-                       sendToBackend(url, extension.getApiKey(), extension.getWkspId());
-                      }catch (InterruptedException e){
+
+              if(scopeVariable.isEmpty() || url.contains(scopeVariable)) {
+                  logArea.append(url+"\n");
+                  Thread.startVirtualThread(() ->
+                  {
+                      try {
+                          semaphore.acquire();
+                          sendToBackend(url, extension.getApiKey(), extension.getWkspId());
+                      } catch (InterruptedException e) {
                           Thread.currentThread().interrupt();
-                        logArea.append("Exception Occured At VT block");
-                      }finally {
+                          logArea.append("Exception Occured At VT block");
+                      } finally {
 
                           semaphore.release();
                       }
-                    });
+                  });
+              }
             }
 
 
@@ -69,7 +72,7 @@ public class JsmonHttpHandler implements HttpHandler {
 
         if(allowAutomateScan) {
             if (apiKey == null || apiKey.trim().isEmpty()) {
-                api.logging().logToOutput("API key is not set. Please configure your API key.");
+                api.logging().logToOutput("API key is not set. Please configure your API key.\n");
                 return;
             }
             try {
