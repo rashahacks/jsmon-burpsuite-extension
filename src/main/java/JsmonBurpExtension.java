@@ -125,7 +125,7 @@ public class JsmonBurpExtension implements BurpExtension{
         JScrollPane scrollForScope = new JScrollPane(scopeDomainField);
         gbc.gridx = 1;
         gbc.gridy = 3;
-        gbc.weightx = 1.0;
+        gbc.weightx = 0.0;
         inputPanel.add(scrollForScope, gbc);
 
 
@@ -143,6 +143,7 @@ public class JsmonBurpExtension implements BurpExtension{
             if (!apikey.isEmpty() && !wkspid.isEmpty()) {
                 apiKey = apikey;
                 wkspId = wkspid;
+                scopeVariable.clear();
                 for(int i=0;i<scopeVar.length;i++) scopeVariable.add(scopeVar[i].toLowerCase());
                 prefs.put("apiKey", apikey);
                 prefs.put("wkspId", wkspid);

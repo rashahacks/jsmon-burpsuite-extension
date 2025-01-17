@@ -40,8 +40,16 @@ public class JsmonHttpHandler implements HttpHandler {
 
           String url = request.url();
           HttpHeader contentType = httpResponseReceived.header("Content-Type");
-          boolean containsScopeWord = scopeVariable.stream().anyMatch(url::contains);
-          if( (url.contains(".js")) || (contentType!=null && contentType.value().contains("javascript"))){
+         String baseUrl = url.split("\\?")[0];
+
+        // logArea.append("BASE URL: "+baseUrl+"\n");
+
+        //int pathStartIndex = baseUrl.indexOf("/", baseUrl.indexOf("//") + 2);
+        //String originalUrl = pathStartIndex != -1 ? baseUrl.substring(0, pathStartIndex) : baseUrl;
+        boolean containsScopeWord = scopeVariable.stream().anyMatch(baseUrl::contains);
+        //logArea.append(containsScopeWord?"true\n":"false\n");
+
+        if( (url.contains(".js")) || (contentType!=null && contentType.value().contains("javascript"))){
 
               if(containsScopeWord) {
                   logArea.append(url+"\n");
