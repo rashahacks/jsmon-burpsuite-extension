@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 
 
@@ -34,15 +35,15 @@ public class JsmonHttpHandler implements HttpHandler {
 
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived httpResponseReceived) {
-        String scopeVariable = extension.getScopeVariable().toLowerCase();
+        ArrayList<String> scopeVariable = extension.getScopeVariable();
         burp.api.montoya.http.message.requests.HttpRequest request =  httpResponseReceived.initiatingRequest();
 
           String url = request.url();
           HttpHeader contentType = httpResponseReceived.header("Content-Type");
-
+          boolean containsScopeWord = scopeVariable.stream().anyMatch(url::contains);
           if( (url.contains(".js")) || (contentType!=null && contentType.value().contains("javascript"))){
 
-              if(scopeVariable.isEmpty() || url.contains(scopeVariable)) {
+              if(containsScopeWord) {
                   logArea.append(url+"\n");
                   Thread.startVirtualThread(() ->
                   {
