@@ -13,7 +13,7 @@ public class JsmonManualUrlProcessing {
 
     public static void processManualUrls(String urls[], String wkspId, String apiKey, JTextArea logArea){
 
-        Semaphore semaphore = new Semaphore(5);
+        Semaphore semaphore = new Semaphore(3);
         SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
 
 
